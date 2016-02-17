@@ -1027,10 +1027,38 @@ define COP2 > CHERICOP2 > CUnseal (cd::reg, cs::reg, ct::reg) =
 -----------------------------------
 -- CCall
 -----------------------------------
-define COP2 > CHERICOP2 > CCall (cs::reg, cb::reg) =
+define COP2 > CHERICOP2 > CCall (cs::reg, cb::reg, sel::bits(11)) =
     if not CP0.Status.CU2 then
         SignalCP2UnusableException
-    else SignalCapException(capExcCall,cs)
+    else if register_inaccessible(cs) then
+        SignalCapException_v(cs)
+    else if register_inaccessible(cb) then
+        SignalCapException_v(cb)
+    else if not getTag(CAPR(cs)) then
+        SignalCapException(capExcTag,cs)
+    else if not getTag(CAPR(cb)) then
+        SignalCapException(capExcTag,cb)
+    else if not getSealed(CAPR(cs)) then
+        SignalCapException(capExcSeal,cs)
+    else if not getSealed(CAPR(cb)) then
+        SignalCapException(capExcSeal,cb)
+    else if getType(CAPR(cs)) <> getType(CAPR(cb)) then
+        SignalCapException(capExcType,cs)
+    else if not getPerms(CAPR(cs)).Permit_Execute then
+        SignalCapException(capExcPermExe,cs)
+    else if getPerms(CAPR(cb)).Permit_Execute then
+        SignalCapException(capExcPermExe,cb)
+    else if getOffset(CAPR(cs)) >=+ getLength(CAPR(cs)) then
+        SignalCapException(capExcLength,cs)
+    else if sel == 42 then -- "single cycle" fast not trusted CCall
+    {
+        CheckBranch;
+        PCC <- setSealed(CAPR(cs), false);
+        IDC <- setSealed(CAPR(cb), false);
+        BranchTo <- Some (getOffset(CAPR(cs)))
+    }
+    else -- generic kernel handler
+        SignalCapException(capExcCall,cs)
 
 -----------------------------------
 -- CReturn

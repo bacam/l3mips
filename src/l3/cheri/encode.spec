@@ -18,6 +18,7 @@ string op_cr_cr(op::string, cr1::reg, cr2::reg) = pad(op):cr(cr1):", ":cr(cr2)
 string op_cr_cr_gr(op::string, cr1::reg, cr2::reg, r1::reg) = pad(op):cr(cr1):", ":cr(cr2):", ":gr(r1)
 string op_cr_cr_cr(op::string, cr1::reg, cr2::reg, cr3::reg) = pad(op):cr(cr1):", ":cr(cr2):", ":cr(cr3)
 string op_gr_cr_cr(op::string, r1::reg, cr1::reg, cr2::reg) = pad(op):gr(r1):", ":cr(cr1):", ":cr(cr2)
+string op_cr_cr_imm(op::string, cr1::reg, cr2::reg, i::bits(N)) = pad(op):cr(cr1):", ":cr(cr2):", ":imm(i)
 string op_gr_cr_gr_imm(op::string, r1::reg, cr1::reg, r2::reg, i::bits(N)) = pad(op):gr(r1):", ":cr(cr1):", ":gr(r2):", ":imm(i)
 string op_cr_cr_gr_imm(op::string, cr1::reg, cr2::reg, r1::reg, i::bits(N)) = pad(op):cr(cr1):", ":cr(cr2):", ":gr(r1):", ":imm(i)
 
@@ -67,7 +68,7 @@ string COP2InstructionToString (i::instruction) =
                 case CJALR(cd, cb)                => op_cr_cr("cjalr",cd,cb)
                 case CSeal(cd, cs, ct)            => op_cr_cr_cr("cseal",cd,cs,ct)
                 case CUnseal(cd, cs, ct)          => op_cr_cr_cr("cunseal",cd,cs,ct)
-                case CCall(cs, cb)                => op_cr_cr("ccall",cs,cb)
+                case CCall(cs, cb, sel)           => op_cr_cr_imm("ccall",cs,cb,sel)
                 case CReturn                      => "creturn"
                 case CLLx(rd, cb, stt)            => "cllx" -- TODO
                 case CLLC(cd, cb)                 => op_cr_cr("cllc", cd, cb)
